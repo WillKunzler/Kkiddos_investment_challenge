@@ -1,0 +1,5 @@
+body{margin:0;background:#1e1e1e;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:30px}h1{text-align:center;color:#D4AF37}
+.card{display:flex;justify-content:space-between;align-items:center;background:#2b2b2b;border-left:8px solid #555;padding:18px;margin:14px 0;border-radius:14px}
+.first{border-color:#D4AF37}.second{border-color:#C0C0C0}.third{border-color:#CD7F32}.fourth{border-color:#4A90E2}
+.name{font-size:2rem}.bal{font-size:2rem;font-weight:bold}#updated{text-align:center;margin-top:30px;color:#ccc}
