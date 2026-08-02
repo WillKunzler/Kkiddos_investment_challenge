@@ -1,120 +1,139 @@
 const csvURL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vTBtyGriDud4pVArvyGHpC3aptGso3l6xn2B8phOwMIn2JekjQZPPkKzt2274D82ie1djrwndV6PcFC/pub?gid=481332784&single=true&output=csv";
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTBtyGriDud4pVArvyGHpC3aptGso316xn2B8ph0wMIn2JekjQZPPkkzt2274D82ie1djrwnv6PcFC/pub?gid=481332784&single=true&output=csv";
 
-const medals = ["🥇","🥈","🥉","🏅"];
-const classes = ["first","second","third","fourth"];
+const REFRESH_MS = 5 * 60 * 1000;
+const medals = ["🥇", "🥈", "🥉", "🏅"];
+const classes = ["first", "second", "third", "fourth"];
+const ordinal = ["1st place", "2nd place", "3rd place", "4th place"];
+
+function cleanMoney(value) {
+  return Number(String(value ?? "")
+    .replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function currency(value) {
+  return value.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2
+  });
+}
+
+function normalizeDate(value) {
+  if (!value) return "Not yet recorded";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function setStatus(text, isError = false) {
+  const status = document.getElementById("status");
+  status.textContent = text;
+  status.classList.toggle("error", isError);
+}
 
 async function loadLeaderboard() {
+  const cards = document.getElementById("cards");
+  const updated = document.getElementById("updated");
+  const banner = document.getElementById("leader-banner");
 
-    const cards = document.getElementById("cards");
-    const updated = document.getElementById("updated");
+  setStatus("Refreshing");
 
-    cards.innerHTML = "<h2>Loading...</h2>";
+  try {
+    const response = await fetch(`${csvURL}&cacheBust=${Date.now()}`, {
+      cache: "no-store"
+    });
 
-    try {
-
-        const response = await fetch(csvURL + "&t=" + Date.now());
-
-        const csv = await response.text();
-
-        Papa.parse(csv, {
-
-            header: true,
-            skipEmptyLines: true,
-
-            complete: function(results) {
-
-                console.log(results.data);
-
-                let players = [];
-
-                results.data.forEach(row => {
-
-                    const balance = Number(
-                        String(row.Balance)
-                        .replace(/\$/g,"")
-                        .replace(/,/g,"")
-                    );
-
-                    if(!isNaN(balance)){
-
-                        players.push({
-
-                            name: row.Child,
-                            balance: balance
-
-                        });
-
-                    }
-
-                });
-
-                players.sort((a,b)=>b.balance-a.balance);
-
-                cards.innerHTML="";
-
-                players.forEach((player,index)=>{
-
-                    cards.innerHTML += `
-
-<div class="card ${classes[index]}">
-
-<div class="name">
-
-${medals[index]} ${player.name}
-
-</div>
-
-<div class="bal">
-
-${player.balance.toLocaleString("en-US",{
-
-style:"currency",
-
-currency:"USD"
-
-})}
-
-</div>
-
-</div>
-
-`;
-
-                });
-
-                updated.innerHTML =
-                    "Updated " +
-                    new Date().toLocaleString();
-
-            }
-
-        });
-
+    if (!response.ok) {
+      throw new Error(`Google Sheets returned ${response.status}`);
     }
 
-    catch(error){
+    const csv = await response.text();
 
-        console.error(error);
+    const parsed = Papa.parse(csv, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: header => header.trim()
+    });
 
-        cards.innerHTML =
-
-        `<h2 style="color:red">
-
-        Unable to load Google Sheet.
-
-        </h2>
-
-        <p>
-
-        ${error}
-
-        </p>`;
-
+    if (parsed.errors.length) {
+      console.warn("CSV warnings:", parsed.errors);
     }
 
+    let players = parsed.data
+      .map(row => ({
+        name: String(row.Child ?? row.Name ?? "").trim(),
+        balance: cleanMoney(row.Balance),
+        rank: Number(row.Rank) || null,
+        medal: String(row.Medal ?? "").trim(),
+        updated: String(row["Last Updated"] ?? "").trim()
+      }))
+      .filter(player => player.name);
+
+    if (!players.length) {
+      throw new Error("No participant rows were found in the Dashboard Feed.");
+    }
+
+    players.sort((a, b) => {
+      if (a.rank && b.rank) return a.rank - b.rank;
+      return b.balance - a.balance;
+    });
+
+    cards.innerHTML = players.slice(0, 4).map((player, index) => `
+      <article class="card ${classes[index]}" style="animation-delay:${index * 70}ms">
+        <div class="place" aria-hidden="true">${player.medal || medals[index]}</div>
+        <div class="person">
+          <div class="rank">${ordinal[index]}</div>
+          <div class="name">${escapeHtml(player.name)}</div>
+        </div>
+        <div class="balance">${currency(player.balance)}</div>
+      </article>
+    `).join("");
+
+    const leader = players[0];
+    banner.classList.remove("is-loading");
+    banner.querySelector(".leader-name").textContent = leader.name;
+    banner.querySelector(".leader-balance").textContent = currency(leader.balance);
+
+    const sheetTimestamp =
+      players.find(player => player.updated)?.updated || "";
+
+    updated.textContent = normalizeDate(sheetTimestamp);
+    setStatus("Live");
+  } catch (error) {
+    console.error(error);
+    cards.innerHTML = `
+      <div class="error-card">
+        <strong>Unable to load the leaderboard</strong>
+        <span>${escapeHtml(error.message)}</span>
+      </div>
+    `;
+    updated.textContent = "Unavailable";
+    banner.querySelector(".leader-name").textContent = "Data unavailable";
+    banner.querySelector(".leader-balance").textContent = "";
+    setStatus("Connection error", true);
+  }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[character]));
 }
 
 loadLeaderboard();
-
-setInterval(loadLeaderboard,300000);
+setInterval(loadLeaderboard, REFRESH_MS);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadLeaderboard();
+});
