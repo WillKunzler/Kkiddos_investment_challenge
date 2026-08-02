@@ -4,10 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#151515">
+  <meta name="description" content="Kunzler family investment leaderboard">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <title>Kunzler Investment Challenge</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,27 +19,26 @@
     <header class="hero">
       <div class="eyebrow">FAMILY INVESTMENT LEAGUE</div>
       <h1><span class="trophy">🏆</span> Kunzler Investment Challenge</h1>
-      <p class="subtitle">Four accounts. One leaderboard.</p>
     </header>
 
-    <section id="leader-banner" class="leader-banner is-loading" aria-live="polite">
-      <div class="leader-label">Current leader</div>
-      <div class="leader-name">Loading…</div>
-      <div class="leader-balance"></div>
+    <section id="leader-banner" class="leader-banner" aria-live="polite">
+      <div class="leader-left">
+        <div class="leader-label">Current leader</div>
+        <div class="leader-name">Loading…</div>
+      </div>
+      <div class="leader-right">
+        <div class="leader-balance"></div>
+        <div class="leader-margin"></div>
+      </div>
     </section>
 
     <section id="cards" class="cards" aria-live="polite">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div>
     </section>
 
     <footer class="footer">
-      <div>
-        <span class="footer-label">Last updated</span>
-        <span id="updated">Waiting for data…</span>
-      </div>
+      <div><span class="footer-label">Updated</span><span id="updated">Waiting for data…</span></div>
       <div id="status" class="status">Connecting</div>
     </footer>
   </main>
