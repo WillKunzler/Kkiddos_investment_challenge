@@ -1,5 +1,5 @@
 const csvURL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vTFT5m8FTR2vwF9tvP150_8UYdeODRHp-MLGGhsUAJie9H7u4zkpLg8TxovqVyZKssee_VNBa6fdMJn/pub?gid=0&single=true&output=csv";
+https://docs.google.com/spreadsheets/d/e/2PACX-1vTBtyGriDud4pVArvyGHpC3aptGso3l6xn2B8phOwMIn2JekjQZPPkKzt2274D82ie1djrwndV6PcFC/pub?gid=481332784&single=true&output=csv;
 
 const medals = ["🥇","🥈","🥉","🏅"];
 const classes = ["first","second","third","fourth"];
