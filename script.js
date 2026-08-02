@@ -1,5 +1,5 @@
 const csvURL =
-  "https://willkunzler.github.io/Kkiddos_investment_challenge/";
+  "https://docs.google.com/spreadsheets/d/1auC8DsC2LZAxYtAmPQWrzQC4GFns69ILou9yYOBQqh0/edit?usp=sharing";
 
 const REFRESH_MS = 5 * 60 * 1000;
 const medals = ["🥇", "🥈", "🥉", "🏅"];
